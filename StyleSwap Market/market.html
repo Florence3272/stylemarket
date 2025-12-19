@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时尚商城 - 智能服装商城系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-bg: #FAF9F6;
+            --accent-coral: #FF6B6B;
+            --accent-blue: #4ECDC4;
+            --text-dark: #2C3E50;
+            --light-pink: #FFE5E5;
+            --light-mint: #E8F8F5;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+        
+        .title-font {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .product-card {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.4);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-coral), #FF8E8E);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-dark);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: var(--accent-blue);
+        }
+        
+        .search-bar {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 12px 16px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--accent-coral);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+        
+        .category-tab {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .category-tab.active {
+            background: var(--accent-coral);
+            color: white;
+            border-color: var(--accent-coral);
+        }
+        
+        .price-range {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent-coral);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .quick-view-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-view-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .quick-view-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .quick-view-modal.show .quick-view-content {
+            transform: scale(1);
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="glass-card mx-6 mt-6 p-4 z-50 relative">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full flex items-center justify-center">
+                    <i class="fas fa-tshirt text-white text-lg"></i>
+                </div>
+                <h1 class="title-font text-2xl font-bold text-gray-800">智能服装商城系统</h1>
+            </div>
+
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="text-gray-700 hover:text-pink-500 transition-colors font-medium">商品与搭配</a>
+                <a href="history.html" class="text-gray-700 hover:text-pink-500 transition-colors font-medium">我的搭配</a>
+                <a href="cart.html" class="text-gray-700 hover:text-pink-500 transition-colors font-medium relative">
+                    购物车
+                    <span id="cartBadge" class="cart-badge hidden">0</span>
+                </a>
+                <a href="checkout.html" class="text-gray-700 hover:text-pink-500 transition-colors font-medium">结算</a>
+                <a href="order.html" class="text-gray-700 hover:text-pink-500 transition-colors font-medium">我的订单</a>
+                <a href="about.html" class="text-gray-700 hover:text-pink-500 transition-colors font-medium">关于系统</a>
+                <a href="market.html" class="text-gray-700 hover:text-pink-500  transition-colors font-medium">商城</a>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <div id="userStatus" class="text-sm text-gray-600">
+                    <span id="username">游客</span>
+                </div>
+                <button id="loginBtn" class="btn-secondary" onclick="window.location.href='login.html'">登录</button>
+                <button id="logoutBtn" class="btn-secondary hidden" onclick="logout()">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="container mx-auto px-6 py-8">
+        <!-- 横幅广告 -->
+        <div class="glass-card p-8 mb-8 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-pink-400 to-blue-400 opacity-20"></div>
+            <div class="relative z-10 text-center">
+                <h2 class="title-font text-4xl font-bold mb-4">春季新品上市</h2>
+                <p class="text-lg mb-6">全场8折优惠，满299免邮</p>
+                <button class="btn-primary text-lg px-8 py-3" onclick="scrollToProducts()">
+                    <i class="fas fa-shopping-bag mr-2"></i>立即选购
+                </button>
+            </div>
+        </div>
+
+        <!-- 搜索和筛选 -->
+        <div class="glass-card p-6 mb-8">
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                <div class="flex-1">
+                    <input type="text" id="searchInput" class="search-bar" placeholder="搜索商品名称、品牌...">
+                </div>
+                <button class="btn-primary" onclick="searchProducts()">
+                    <i class="fas fa-search mr-2"></i>搜索
+                </button>
+            </div>
+            
+            <!-- 分类标签 -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button class="category-tab active" data-category="all">全部商品</button>
+                <button class="category-tab" data-category="tops">上衣</button>
+                <button class="category-tab" data-category="bottoms">下装</button>
+                <button class="category-tab" data-category="dresses">连衣裙</button>
+                <button class="category-tab" data-category="outerwear">外套</button>
+                <button class="category-tab" data-category="accessories">配饰</button>
+            </div>
+            
+            <!-- 价格筛选 -->
+            <div class="flex items-center space-x-4">
+                <span class="text-sm font-medium">价格范围:</span>
+                <div class="flex space-x-2">
+                    <button class="price-range" onclick="filterByPrice('all')">全部</button>
+                    <button class="price-range" onclick="filterByPrice('0-99')">¥0-99</button>
+                    <button class="price-range" onclick="filterByPrice('100-299')">¥100-299</button>
+                    <button class="price-range" onclick="filterByPrice('300-599')">¥300-599</button>
+                    <button class="price-range" onclick="filterByPrice('600+')">¥600+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商品网格 -->
+        <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- 商品卡片将在这里动态生成 -->
+        </div>
+
+        <!-- 空状态 -->
+        <div id="emptyState" class="text-center py-12 hidden">
+            <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold mb-2">暂无商品</h3>
+            <p class="text-gray-600">请尝试其他搜索条件</p>
+        </div>
+    </div>
+
+    <!-- 快速查看模态框 -->
+    <div id="quickViewModal" class="quick-view-modal">
+        <div class="quick-view-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="title-font text-2xl font-bold">商品详情</h2>
+                <button onclick="closeQuickView()" class="text-gray-500 hover:text-gray-700 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="quickViewContent">
+                <!-- 详情内容将在这里动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知消息 -->
+    <div id="notification" class="notification">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span id="notificationText">操作成功！</span>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="glass-card mx-6 mb-6 mt-12 p-6 text-center">
+        <p class="text-gray-600">&copy; 2025 时尚搭配师. 让每个人都能成为自己的设计师.</p>
+    </footer>
+
+    <script>
+        class FashionStore {
+            constructor() {
+                this.user = this.loadUser();
+                this.products = this.loadProducts();
+                this.filteredProducts = [...this.products];
+                this.cart = this.loadCart();
+                this.currentCategory = 'all';
+                this.currentPriceRange = 'all';
+                
+                this.init();
+            }
+            
+            init() {
+                this.updateUserStatus();
+                this.renderProducts();
+                this.setupEventListeners();
+                this.updateCartBadge();
+            }
+            
+            loadUser() {
+                const userData = localStorage.getItem('fashionUser');
+                return userData ? JSON.parse(userData) : { isLoggedIn: false, username: '游客' };
+            }
+            
+            loadProducts() {
+    /* 1. 你的固有商品（只留你想要的 4 条） */
+    const defaultProducts = [
+        {
+            id: 2,
+            name: '高腰牛仔裤',
+            category: 'bottoms',
+            price: 299,
+            image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400',
+            description: '经典高腰设计，修身版型，弹性牛仔面料',
+            colors: ['#4169E1', '#000080'],
+            sizes: ['26', '27', '28', '29', '30'],
+            rating: 4.6,
+            reviews: 89
+        },
+        {
+            id: 3,
+            name: '针织连衣裙',
+            category: 'dresses',
+            price: 399,
+            image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400',
+            description: '柔软针织材质，修身剪裁，展现优雅曲线',
+            colors: ['#000000', '#808080', '#FFC0CB'],
+            sizes: ['S', 'M', 'L'],
+            rating: 4.9,
+            reviews: 234
+        },
+        {
+            id: 5,
+            name: '印花丝巾',
+            category: 'accessories',
+            price: 159,
+            image: 'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=400',
+            description: '真丝材质，精美印花，提升整体造型感',
+            colors: ['#FF69B4', '#87CEEB', '#98FB98'],
+            sizes: ['均码'],
+            rating: 4.5,
+            reviews: 45
+        },
+        {
+            id: 6,
+            name: '经典白衬衫',
+            category: 'tops',
+            price: 129,
+            image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400',
+            description: '纯棉材质，经典条纹设计，休闲百搭',
+            colors: ['#FFFFFF', '#000000', '#FF0000'],
+            sizes: ['S', 'M', 'L', 'XL'],
+            rating: 4.4,
+            reviews: 123
+        }
+    ];
+
+    /* 2. 合并商家商品（零后端、base64 图片已持久化） */
+    const merchant = JSON.parse(localStorage.getItem('merchantProducts') || '[]');
+
+    /* 3. 返回合并后的总商品池 */
+    return [...defaultProducts, ...merchant];
+}
+            
+            loadCart() {
+                const cartData = localStorage.getItem('fashionCart');
+                return cartData ? JSON.parse(cartData) : [];
+            }
+            
+            updateUserStatus() {
+                if (this.user.isLoggedIn) {
+                    document.getElementById('username').textContent = this.user.username;
+                    document.getElementById('loginBtn').classList.add('hidden');
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                }
+            }
+            
+            renderProducts() {
+                const grid = document.getElementById('productsGrid');
+                const emptyState = document.getElementById('emptyState');
+                
+                if (this.filteredProducts.length === 0) {
+                    grid.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+                
+                emptyState.classList.add('hidden');
+                
+                grid.innerHTML = this.filteredProducts.map(product => this.createProductCard(product)).join('');
+                
+                // 添加动画
+                anime({
+                    targets: '.product-card',
+                    scale: [0.8, 1],
+                    opacity: [0, 1],
+                    delay: anime.stagger(100),
+                    duration: 600,
+                    easing: 'easeOutElastic(1, .8)'
+                });
+            }
+            
+            createProductCard(product) {
+                const colorsHtml = product.colors.map(color => 
+                    `<div class="w-4 h-4 rounded-full border border-gray-300" style="background: ${color};"></div>`
+                ).join('');
+                
+                return `
+                    <div class="product-card">
+                        <div class="relative overflow-hidden">
+                            <img src="${product.image}" alt="${product.name}" class="product-image">
+                            <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
+                                <button class="btn-primary opacity-0 hover:opacity-100 transition-opacity duration-300" onclick="quickView(${product.id})">
+                                    <i class="fas fa-eye mr-2"></i>快速查看
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4">
+                            <h3 class="font-semibold text-lg mb-2">${product.name}</h3>
+                            <div class="flex items-center space-x-2 mb-2">
+                                <div class="flex space-x-1">${colorsHtml}</div>
+                            </div>
+                            <div class="flex items-center space-x-2 mb-3">
+                                <div class="flex text-yellow-400">
+                                    ${this.renderStars(product.rating)}
+                                </div>
+                                <span class="text-sm text-gray-600">(${product.reviews})</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-pink-500">¥${product.price}</span>
+                                <button class="btn-primary" onclick="addToCart(${product.id})">
+                                    <i class="fas fa-shopping-cart mr-2"></i>加入购物车
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            renderStars(rating) {
+                const fullStars = Math.floor(rating);
+                const hasHalfStar = rating % 1 !== 0;
+                let stars = '';
+                
+                for (let i = 0; i < fullStars; i++) {
+                    stars += '<i class="fas fa-star"></i>';
+                }
+                
+                if (hasHalfStar) {
+                    stars += '<i class="fas fa-star-half-alt"></i>';
+                }
+                
+                const emptyStars = 5 - Math.ceil(rating);
+                for (let i = 0; i < emptyStars; i++) {
+                    stars += '<i class="far fa-star"></i>';
+                }
+                
+                return stars;
+            }
+            
+            setupEventListeners() {
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.searchProducts(e.target.value);
+                });
+                
+                document.querySelectorAll('.category-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.filterByCategory(e.target.dataset.category);
+                    });
+                });
+            }
+            
+            filterByCategory(category) {
+                this.currentCategory = category;
+                this.applyFilters();
+            }
+            
+            filterByPrice(range) {
+                this.currentPriceRange = range;
+                this.applyFilters();
+            }
+            
+            applyFilters() {
+                let filtered = [...this.products];
+                
+                if (this.currentCategory !== 'all') {
+                    filtered = filtered.filter(p => p.category === this.currentCategory);
+                }
+                
+                if (this.currentPriceRange !== 'all') {
+                    const [min, max] = this.currentPriceRange.split('-').map(p => p.replace('+', ''));
+                    filtered = filtered.filter(p => {
+                        if (max) {
+                            return p.price >= parseInt(min) && p.price <= parseInt(max);
+                        } else {
+                            return p.price >= parseInt(min);
+                        }
+                    });
+                }
+                
+                this.filteredProducts = filtered;
+                this.renderProducts();
+            }
+            
+            searchProducts(query) {
+                if (!query.trim()) {
+                    this.applyFilters();
+                    return;
+                }
+                
+                this.filteredProducts = this.products.filter(p => 
+                    p.name.toLowerCase().includes(query.toLowerCase()) ||
+                    p.description.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                this.renderProducts();
+            }
+            
+            quickView(productId) {
+                const product = this.products.find(p => p.id === productId);
+                if (!product) return;
+                
+                const modal = document.getElementById('quickViewModal');
+                const content = document.getElementById('quickViewContent');
+                
+                content.innerHTML = `
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <img src="${product.image}" alt="${product.name}" class="w-full rounded-lg">
+                        </div>
+                        <div>
+                            <h2 class="title-font text-3xl font-bold mb-4">${product.name}</h2>
+                            <div class="flex items-center space-x-2 mb-4">
+                                <div class="flex text-yellow-400 text-lg">
+                                    ${this.renderStars(product.rating)}
+                                </div>
+                                <span class="text-gray-600">(${product.reviews} 评价)</span>
+                            </div>
+                            <p class="text-gray-700 mb-6">${product.description}</p>
+                            
+                            <div class="space-y-4 mb-6">
+                                <div>
+                                    <span class="font-medium">可选颜色:</span>
+                                    <div class="flex space-x-2 mt-2">
+                                        ${product.colors.map(color => `
+                                            <div class="w-8 h-8 rounded-full border-2 border-gray-300" 
+                                                 style="background: ${color};"></div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="font-medium">可选尺码:</span>
+                                    <div class="flex space-x-2 mt-2">
+                                        ${product.sizes.map(size => `
+                                            <button class="px-3 py-1 border border-gray-300 rounded hover:border-pink-500 hover:text-pink-500">
+                                                ${size}
+                                            </button>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-3xl font-bold text-pink-500 mb-6">¥${product.price}</div>
+                            
+                            <div class="flex space-x-4">
+                                <button class="btn-primary flex-1 text-lg py-3" onclick="addToCart(${product.id})">
+                                    <i class="fas fa-shopping-cart mr-2"></i>加入购物车
+                                </button>
+                                <button class="btn-secondary text-lg py-3 px-6" onclick="buyNow(${product.id})">
+                                    <i class="fas fa-bolt mr-2"></i>立即购买
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                modal.classList.add('show');
+            }
+            
+            addToCart(productId) {
+                const product = this.products.find(p => p.id === productId);
+                if (!product) return;
+                
+                const existingItem = this.cart.find(item => item.id === productId);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    this.cart.push({
+                        ...product,
+                        quantity: 1
+                    });
+                }
+                
+                this.saveCart();
+                this.updateCartBadge();
+                this.showNotification(`${product.name} 已加入购物车`);
+            }
+            
+            saveCart() {
+                localStorage.setItem('fashionCart', JSON.stringify(this.cart));
+            }
+            
+            updateCartBadge() {
+                const badge = document.getElementById('cartBadge');
+                const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
+                
+                if (totalItems > 0) {
+                    badge.textContent = totalItems;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+            
+            showNotification(message, type = 'success') {
+                const notification = document.getElementById('notification');
+                const notificationText = document.getElementById('notificationText');
+                const icon = notification.querySelector('i');
+                
+                notificationText.textContent = message;
+                
+                if (type === 'error') {
+                    icon.className = 'fas fa-exclamation-circle text-red-500 mr-3';
+                } else {
+                    icon.className = 'fas fa-check-circle text-green-500 mr-3';
+                }
+                
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        // 全局函数
+        function quickView(productId) {
+            window.fashionStore.quickView(productId);
+        }
+        
+        function closeQuickView() {
+            document.getElementById('quickViewModal').classList.remove('show');
+        }
+        
+        function addToCart(productId) {
+            window.fashionStore.addToCart(productId);
+        }
+        
+        function buyNow(productId) {
+            addToCart(productId);
+            window.location.href = 'checkout.html';
+        }
+        
+        function searchProducts() {
+            const query = document.getElementById('searchInput').value;
+            window.fashionStore.searchProducts(query);
+        }
+        
+        function filterByPrice(range) {
+            window.fashionStore.filterByPrice(range);
+        }
+        
+        function scrollToProducts() {
+            document.getElementById('productsGrid').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function logout() {
+            localStorage.removeItem('fashionUser');
+            window.location.reload();
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.fashionStore = new FashionStore();
+        });
+        
+        // 点击模态框外部关闭
+        document.getElementById('quickViewModal').addEventListener('click', (e) => {
+            if (e.target.id === 'quickViewModal') {
+                closeQuickView();
+            }
+        });
+    </script>
+</body>
+</html>

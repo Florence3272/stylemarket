@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>购物记录与收藏管理 - 智能服装商城系统</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-bg: #FAF9F6;
+      --accent-coral: #FF6B6B;
+      --accent-blue: #4ECDC4;
+      --text-dark: #2C3E50;
+      --light-pink: #FFE5E5;
+      --light-mint: #E8F8F5;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:'Inter',sans-serif;
+      background:var(--primary-bg);
+      color:var(--text-dark);
+      min-height:100vh;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    a{text-decoration:none;color:inherit;}
+
+    /* ----- 顶部导航 ----- */
+    .navbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      backdrop-filter:blur(12px);
+      background:rgba(255,255,255,.25);
+      border-bottom:1px solid rgba(255,255,255,.2);
+      padding:.75rem 1.5rem;
+    }
+    .navbar-inner{
+      max-width:80rem;
+      margin:0 auto;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .logo{font-size:1.25rem;font-weight:600;letter-spacing:.05em;}
+    .nav-links{display:flex;gap:1.5rem;font-size:.875rem;}
+    .nav-links a{transition:color .3s;}
+    .nav-links a:hover,
+    .nav-links a.active{color:var(--accent-coral);}
+
+    /* ----- 主容器 ----- */
+    .container{
+      max-width:80rem;
+      margin:0 auto;
+      padding:3rem 1.5rem 4rem;
+    }
+    .page-title{
+      font-family:'Playfair Display',serif;
+      font-size:2rem;
+      font-weight:600;
+      margin-bottom:1rem;
+    }
+    .page-subtitle{
+      font-size:1rem;
+      opacity:.8;
+      margin-bottom:2.5rem;
+    }
+
+    /* ----- 玻璃卡片 ----- */
+    .glass-card{
+      background:rgba(255,255,255,.3);
+      backdrop-filter:blur(15px);
+      border-radius:20px;
+      padding:1.5rem 2rem;
+      border:1px solid rgba(255,255,255,.2);
+      margin-bottom:2rem;
+    }
+
+    /* ----- 记录网格 ----- */
+    .record-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:1.5rem;
+      margin-bottom:3rem;
+    }
+    .record-card{
+      background:rgba(255,255,255,.4);
+      backdrop-filter:blur(10px);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:0 8px 20px rgba(0,0,0,.06);
+      transition:all .3s ease;
+      border:1px solid rgba(255,255,255,.3);
+    }
+    .record-card:hover{
+      transform:translateY(-6px);
+      box-shadow:0 12px 30px rgba(0,0,0,.1);
+      background:rgba(255,255,255,.5);
+    }
+    .record-image{
+      width:100%;
+      height:200px;
+      object-fit:cover;
+      display:block;
+    }
+    .record-body{padding:1.25rem;}
+    .record-name{
+      font-weight:600;
+      font-size:1.125rem;
+      margin-bottom:.25rem;
+    }
+    .record-meta{
+      font-size:.875rem;
+      opacity:.7;
+      margin-bottom:.75rem;
+    }
+    .record-actions{
+      display:flex;
+      gap:.75rem;
+    }
+    .btn{
+      flex:1;
+      text-align:center;
+      padding:.5rem 0;
+      border-radius:10px;
+      font-size:.875rem;
+      font-weight:500;
+      border:none;
+      cursor:pointer;
+      transition:all .3s;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--accent-coral),var(--accent-blue));
+      color:#fff;
+      box-shadow:0 4px 15px rgba(78,205,196,.2);
+    }
+    .btn-primary:hover{box-shadow:0 6px 20px rgba(78,205,196,.35);}
+    .btn-secondary{
+      background:rgba(44,62,80,.06);
+      color:var(--text-dark);
+    }
+    .btn-secondary:hover{background:rgba(44,62,80,.1);}
+
+    /* ----- 统计摘要 ----- */
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:1.5rem;
+    }
+    .summary-item{
+      text-align:center;
+      padding:1.5rem;
+      background:rgba(255,255,255,.3);
+      backdrop-filter:blur(10px);
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.2);
+    }
+    .summary-value{
+      font-family:'Playfair Display',serif;
+      font-size:2rem;
+      font-weight:700;
+      background:linear-gradient(135deg,var(--accent-coral),var(--accent-blue));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .summary-label{
+      font-size:.875rem;
+      opacity:.7;
+      margin-top:.25rem;
+    }
+
+    /* ----- 页脚 ----- */
+    .footer{
+      text-align:center;
+      padding:1.5rem 0;
+      font-size:.75rem;
+      color:var(--text-dark);
+      opacity:.5;
+      backdrop-filter:blur(12px);
+      background:rgba(255,255,255,.2);
+      border-top:1px solid rgba(255,255,255,.2);
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <div class="logo">智能服装商城系统</div>
+      <nav class="nav-links">
+        <a href="index.html">搭配模拟</a>
+        <a href="history.html" class="active">我的搭配</a>
+        <a href="cart.html">购物车</a>
+        <a href="checkout.html">结算</a>
+        <a href="order.html">我的订单</a>
+        <a href="about.html">关于系统</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 主体 -->
+  <main class="container">
+    <h1 class="page-title">购物记录与收藏管理</h1>
+    <p class="page-subtitle">在这里您可以查看所有购买记录、收藏的服装款式，以及快速再次购买或删除无用记录。</p>
+
+    <!-- 记录列表 -->
+    <section id="recordList" class="record-grid">
+      <!-- JS 动态生成 -->
+    </section>
+
+    <!-- 统计摘要 -->
+    <section class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value" id="totalOrders">0</div>
+        <div class="summary-label">总订单数</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" id="favoritesCount">0</div>
+        <div class="summary-label">收藏商品</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" id="totalSpent">0.00</div>
+        <div class="summary-label">累计消费金额</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    © 2025 智能服装商城系统 | Shopping History Module
+  </footer>
+
+  <script>
+    /* ====== 读取订单 & 渲染购买记录 ====== */
+    function loadOrders() {
+      return JSON.parse(localStorage.getItem('fashionOrders') || '[]');
+    }
+    function renderHistory() {
+      const orders = loadOrders();
+      const listBox = document.getElementById('recordList');
+      const totalOrdersEl = document.getElementById('totalOrders');
+      const favoritesCountEl = document.getElementById('favoritesCount');
+      const totalSpentEl = document.getElementById('totalSpent');
+
+      listBox.innerHTML = '';
+      let totalOrders = 0, favorites = 0, spent = 0;
+
+      if (!orders.length) {
+        listBox.innerHTML = '<p class="text-gray-600">暂无购买记录</p>';
+        totalOrdersEl.textContent = 0;
+        favoritesCountEl.textContent = 0;
+        totalSpentEl.textContent = '0.00';
+        return;
+      }
+
+      // 展平所有订单商品并去重（以商品 id 为 key）
+      const seen = new Set();
+      const records = [];
+      orders.forEach(order => {
+        order.items.forEach(item => {
+          if (seen.has(item.id)) return;
+          seen.add(item.id);
+          records.push({
+            ...item,
+            date: order.createAt,
+            favorite: false // 默认未收藏，可扩展收藏逻辑
+          });
+        });
+      });
+
+      records.forEach(item => {
+        totalOrders += 1;
+        if (item.favorite) favorites += 1;
+        spent += item.price;
+
+        const card = document.createElement('div');
+        card.className = 'record-card';
+        card.innerHTML = `
+          <img class="record-image" src="${item.image}" alt="${item.name}">
+          <div class="record-body">
+            <div class="record-name">${item.name}</div>
+            <div class="record-meta">购买日期：${new Date(item.date).toLocaleDateString('zh-CN')}</div>
+            <div class="record-meta">价格：¥${item.price.toFixed(2)}</div>
+            <div class="record-actions">
+              <button class="btn btn-primary" onclick="buyAgain(${item.id})">再次购买</button>
+              <button class="btn btn-secondary" onclick="toggleFavorite(${item.id})">收藏</button>
+            </div>
+          </div>
+        `;
+        listBox.appendChild(card);
+      });
+
+      totalOrdersEl.textContent = totalOrders;
+      favoritesCountEl.textContent = favorites;
+      totalSpentEl.textContent = spent.toFixed(2);
+    }
+
+    function buyAgain(id) {
+      // 直接加入购物车
+      const cart = JSON.parse(localStorage.getItem('fashionCart') || '[]');
+      const orders = loadOrders();
+      const item = orders.flatMap(o => o.items).find(i => i.id === id);
+      if (!item) return alert('商品不存在');
+      const exist = cart.find(i => i.id === id);
+      if (exist) exist.quantity += 1;
+      else cart.push({ ...item, quantity: 1 });
+      localStorage.setItem('fashionCart', JSON.stringify(cart));
+      alert('已重新加入购物车！');
+    }
+
+    function toggleFavorite(id) {
+      alert(`商品 ${id} 收藏状态已切换`);
+      // 实际可扩展：读写 localStorage 收藏列表
+    }
+
+    document.addEventListener('DOMContentLoaded', renderHistory);
+  </script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的商店 - 商家后台</title>
+    <!-- 与客户端、merchant 完全一致的外部依赖 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-bg: #FAF9F6;
+            --accent-coral: #FF6B6B;
+            --accent-blue: #4ECDC4;
+            --text-dark: #2C3E50;
+            --light-pink: #FFE5E5;
+            --light-mint: #E8F8F5;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--primary-bg); color: var(--text-dark); }
+        .title-font { font-family: 'Playfair Display', serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .product-card {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.4);
+        }
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .product-card:hover .product-image { transform: scale(1.05); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-coral), #FF8E8E);
+            color: white; border: none; padding: 8px 16px; border-radius: 8px;
+            font-weight: 500; cursor: pointer; transition: all 0.3s ease; font-size: 14px;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.8); color: var(--text-dark);
+            border: 1px solid rgba(255, 255, 255, 0.5); padding: 8px 16px; border-radius: 8px;
+            font-weight: 500; cursor: pointer; transition: all 0.3s ease; font-size: 14px;
+        }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.9); border-color: var(--accent-blue); }
+        .notification {
+            position: fixed; top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
+            padding: 15px 20px; border-radius: 10px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transform: translateX(400px); transition: all 0.3s ease; z-index: 1000;
+        }
+        .notification.show { transform: translateX(0); }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="glass-card mx-6 mt-6 p-4 z-50 relative">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full flex items-center justify-center">
+                    <i class="fas fa-store text-white text-lg"></i>
+                </div>
+                <h1 class="title-font text-2xl font-bold text-gray-800">我的商店</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="merchant.html" class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>发布新品
+                </a>
+                <button onclick="logout()" class="btn-secondary">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 统计卡片 -->
+    <div class="container mx-auto px-6 mt-6">
+        <div class="grid md:grid-cols-4 gap-4">
+            <div class="glass-card p-4 text-center">
+                <div class="text-2xl font-bold text-pink-500" id="totalProducts">0</div>
+                <div class="text-sm text-gray-600">在售商品</div>
+            </div>
+            <div class="glass-card p-4 text-center">
+                <div class="text-2xl font-bold text-blue-500" id="totalSold">0</div>
+                <div class="text-sm text-gray-600">累计销量</div>
+            </div>
+            <div class="glass-card p-4 text-center">
+                <div class="text-2xl font-bold text-green-500" id="totalRevenue">0</div>
+                <div class="text-sm text-gray-600">累计收入</div>
+            </div>
+            <div class="glass-card p-4 text-center">
+                <div class="text-2xl font-bold text-yellow-500" id="avgRating">0</div>
+                <div class="text-sm text-gray-600">平均评分</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 筛选/批量 -->
+    <div class="container mx-auto px-6 mt-6">
+        <div class="glass-card p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <input type="text" id="searchInput" placeholder="搜索本店商品..." class="search-bar">
+                <button onclick="searchShop()" class="btn-primary">搜索</button>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="batchDelete()" class="btn-secondary">
+                    <i class="fas fa-trash-alt mr-2"></i>批量下架
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 商品网格 -->
+    <div class="container mx-auto px-6 py-8">
+        <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- 动态渲染 -->
+        </div>
+        <div id="emptyState" class="text-center py-12 hidden">
+            <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold mb-2">商店还是空的</h3>
+            <p class="text-gray-600">快去 <a href="merchant.html" class="text-pink-500 underline">发布新品</a> 吧！</p>
+        </div>
+    </div>
+
+    <!-- 通知 -->
+    <div id="notification" class="notification">
+        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+        <span id="notificationText">操作成功</span>
+    </div>
+
+    <script>
+        /* ========== 工具 ========== */
+        const $ = s => document.querySelector(s);
+        const showToast = (msg, type = 'success') => {
+            const n = $('#notification');
+            $('#notificationText').textContent = msg;
+            n.querySelector('i').className = type === 'success'
+                ? 'fas fa-check-circle text-green-500 mr-3'
+                : 'fas fa-exclamation-circle text-red-500 mr-3';
+            n.classList.add('show');
+            setTimeout(() => n.classList.remove('show'), 2500);
+        };
+
+        /* ========== 数据层 ========== */
+        class MyShop {
+            constructor() {
+                this.products = this.loadProducts(); // 来自 merchant 写入的 localStorage
+                this.filtered = [...this.products];
+                this.init();
+            }
+            loadProducts() {
+                return JSON.parse(localStorage.getItem('merchantProducts') || '[]');
+            }
+            saveProducts() {
+                localStorage.setItem('merchantProducts', JSON.stringify(this.products));
+            }
+            init() {
+                this.render();
+                this.updateStats();
+            }
+            render() {
+                const grid = $('#productsGrid');
+                const empty = $('#emptyState');
+                if (this.filtered.length === 0) {
+                    grid.innerHTML = '';
+                    empty.classList.remove('hidden');
+                    return;
+                }
+                empty.classList.add('hidden');
+                grid.innerHTML = this.filtered.map(p => this.cardTemplate(p)).join('');
+                anime({
+                    targets: '.product-card',
+                    scale: [0.8, 1],
+                    opacity: [0, 1],
+                    delay: anime.stagger(100),
+                    duration: 600,
+                    easing: 'easeOutElastic(1, .8)'
+                });
+            }
+            cardTemplate(p) {
+                const colorsHtml = p.colors.map(c => `<div class="w-4 h-4 rounded-full border" style="background:${c}"></div>`).join('');
+                return `
+                    <div class="product-card relative" data-id="${p.id}">
+                        <img src="${p.image}" class="product-image">
+                        <div class="absolute top-2 right-2 flex space-x-2">
+                            <button onclick="shop.editProduct(${p.id})" class="btn-secondary text-xs px-2 py-1">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="shop.deleteProduct(${p.id})" class="btn-secondary text-xs px-2 py-1">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold text-lg mb-2">${p.name}</h3>
+                            <div class="flex space-x-2 mb-2">${colorsHtml}</div>
+                            <div class="flex items-center space-x-2 mb-3 text-yellow-400">
+                                ${this.stars(p.rating)}
+                                <span class="text-sm text-gray-600">(${p.reviews || 0})</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-pink-500">¥${p.price}</span>
+                                <span class="text-sm text-gray-600">库存 ${p.stock || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            stars(r) {
+                const full = Math.floor(r);
+                const half = r % 1 !== 0;
+                let html = '';
+                for (let i = 0; i < full; i++) html += '<i class="fas fa-star"></i>';
+                if (half) html += '<i class="fas fa-star-half-alt"></i>';
+                const empt = 5 - Math.ceil(r);
+                for (let i = 0; i < empt; i++) html += '<i class="far fa-star"></i>';
+                return html;
+            }
+            updateStats() {
+                $('#totalProducts').textContent = this.products.length;
+                $('#totalSold').textContent = this.products.reduce((s, p) => s + (p.sold || 0), 0);
+                $('#totalRevenue').textContent = this.products.reduce((s, p) => s + (p.sold || 0) * p.price, 0);
+                $('#avgRating').textContent = this.products.length
+                    ? (this.products.reduce((s, p) => s + parseFloat(p.rating), 0) / this.products.length).toFixed(1)
+                    : '0';
+            }
+            deleteProduct(id) {
+                if (!confirm('确定下架该商品？')) return;
+                this.products = this.products.filter(p => p.id !== id);
+                this.saveProducts();
+                this.filtered = this.filtered.filter(p => p.id !== id);
+                this.render();
+                this.updateStats();
+                showToast('已下架');
+            }
+            editProduct(id) {
+                // 简单实现：把数据暂存到 localStorage 跳回 merchant 页面自动回填
+                const p = this.products.find(p => p.id === id);
+                localStorage.setItem('editProduct', JSON.stringify(p));
+                location.href = 'merchant.html?edit=1';
+            }
+        }
+
+        /* ========== 搜索 ========== */
+        function searchShop() {
+            const q = $('#searchInput').value.trim().toLowerCase();
+            shop.filtered = q
+                ? shop.products.filter(p => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q))
+                : [...shop.products];
+            shop.render();
+        }
+        $('#searchInput').addEventListener('input', searchShop);
+
+        /* ========== 批量下架 ========== */
+        function batchDelete() {
+            const ids = [...document.querySelectorAll('.product-card:checked')].map(c => parseInt(c.dataset.id));
+            if (ids.length === 0) return showToast('请先选择商品', 'error');
+            if (!confirm(`确定下架选中的 ${ids.length} 件商品？`)) return;
+            shop.products = shop.products.filter(p => !ids.includes(p.id));
+            shop.saveProducts();
+            shop.filtered = [...shop.products];
+            shop.render();
+            shop.updateStats();
+            showToast('批量下架完成');
+        }
+
+        /* ========== 退出 ========== */
+        function logout() {
+            localStorage.removeItem('fashionUser');
+            location.href = 'index.html';
+        }
+
+        /* ========== 初始化 ========== */
+        const shop = new MyShop();
+    </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>购物车 - 智能服装商城系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <style>
+        :root {
+            --primary-bg: #FAF9F6;
+            --accent-coral: #FF6B6B;
+            --accent-blue: #4ECDC4;
+            --text-dark: #2C3E50;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+            margin: 0;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .cart-item {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .cart-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.4);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-coral), #FF8E8E);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-dark);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: var(--accent-blue);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="glass-card mx-6 mt-6 p-4 z-50 relative">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full flex items-center justify-center">
+                    <i class="fas fa-tshirt text-white text-lg"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">智能服装商城系统</h1>
+            </div>
+            <div class="flex space-x-6">
+                <a href="index.html">搭配模拟</a>
+        <a href="cart.html">购物车</a>
+        <a href="checkout.html" class="active">结算</a>
+        <a href="order.html">订单</a>
+        <a href="about.html">关于</a>
+        <a href="market.html">商城</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主体 -->
+    <main class="container mx-auto px-6 py-8 max-w-5xl">
+        <h2 class="text-3xl font-bold mb-6 text-center">🛒 我的购物车</h2>
+
+        <!-- 商品列表 -->
+        <section id="cartList" class="space-y-4 mb-8">
+            <!-- 动态插入 -->
+        </section>
+
+        <!-- 空购物车 -->
+        <div id="emptyCart" class="hidden text-center py-12">
+            <i class="fas fa-shopping-cart text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-600 mb-4">购物车还是空的</p>
+            <a href="market.html" class="btn-primary">去商城逛逛</a>
+        </div>
+
+        <!-- 合计 & 操作 -->
+        <div id="cartFooter" class="glass-card p-6 flex flex-col md:flex-row justify-between items-center gap-4 hidden">
+            <div class="text-xl font-bold">
+                合计：<span class="text-pink-500 text-2xl" id="totalPrice">¥0.00</span>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="location.href='market.html'" class="btn-secondary">继续购物</button>
+                <button onclick="goCheckout()" class="btn-primary">去结算</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="glass-card mx-6 mb-6 mt-12 p-6 text-center">
+        <p class="text-gray-600">&copy; 2025 时尚搭配师. 让每个人都能成为自己的设计师.</p>
+    </footer>
+
+    <script>
+        /* ========== 购物车逻辑 ========== */
+        function loadCart() {
+            return JSON.parse(localStorage.getItem('fashionCart') || '[]');
+        }
+        function saveCart(cart) {
+            localStorage.setItem('fashionCart', JSON.stringify(cart));
+        }
+        function renderCart() {
+            const cart = loadCart();
+            const listBox = document.getElementById('cartList');
+            const emptyBox = document.getElementById('emptyCart');
+            const footerBox = document.getElementById('cartFooter');
+
+            if (!cart.length) {
+                listBox.innerHTML = '';
+                emptyBox.classList.remove('hidden');
+                footerBox.classList.add('hidden');
+                return;
+            }
+            emptyBox.classList.add('hidden');
+            footerBox.classList.remove('hidden');
+
+            listBox.innerHTML = cart.map(item => `
+                <div class="cart-item flex flex-col md:flex-row gap-4">
+                    <img src="${item.image}" alt="${item.name}" class="w-24 h-24 object-cover rounded-xl"/>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-lg mb-1">${item.name}</h3>
+                        <p class="text-sm text-gray-600 mb-2">${item.description}</p>
+                        <div class="flex items-center space-x-2 mb-2">
+                            ${item.colors.map(c => `<span class="w-4 h-4 rounded-full border" style="background:${c}"></span>`).join('')}
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-pink-500 font-bold text-xl">¥${item.price}</span>
+                            <div class="flex items-center gap-2">
+                                <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+                                <span class="qty-val">${item.quantity}</span>
+                                <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+                                <button class="remove-btn ml-3" onclick="removeItem(${item.id})">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            calcTotal();
+        }
+        function changeQty(id, delta) {
+            const cart = loadCart();
+            const item = cart.find(c => c.id === id);
+            if (!item) return;
+            item.quantity += delta;
+            if (item.quantity <= 0) {
+                removeItem(id);
+                return;
+            }
+            saveCart(cart);
+            renderCart();
+        }
+        function removeItem(id) {
+            if (!confirm('确定删除该商品？')) return;
+            let cart = loadCart();
+            cart = cart.filter(c => c.id !== id);
+            saveCart(cart);
+            renderCart();
+        }
+        function calcTotal() {
+            const cart = loadCart();
+            const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+            document.getElementById('totalPrice').textContent = `¥${total.toFixed(2)}`;
+        }
+        function goCheckout() {
+            location.href = 'checkout.html';
+        }
+
+        /* ========== 初始化 ========== */
+        document.addEventListener('DOMContentLoaded', renderCart);
+    </script>
+</body>
+</html>

@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的搭配历史 - 时尚搭配师</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-bg: #FAF9F6;
+            --accent-coral: #FF6B6B;
+            --accent-blue: #4ECDC4;
+            --text-dark: #2C3E50;
+            --light-pink: #FFE5E5;
+            --light-mint: #E8F8F5;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+        
+        .title-font {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .outfit-card {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .outfit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.4);
+        }
+        
+        .outfit-preview {
+            width: 120px;
+            height: 150px;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-coral), #FF8E8E);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-dark);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: var(--accent-blue);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        .search-bar {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 12px 16px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--accent-coral);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+        
+        .filter-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-tab {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .filter-tab.active {
+            background: rgba(255, 255, 255, 0.3);
+            color: var(--accent-coral);
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-coral), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <!-- 导航栏 -->
+<nav class="glass-card mx-6 mt-6 p-4 z-50 relative">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full flex items-center justify-center">
+                    <i class="fas fa-tshirt text-white text-lg"></i>
+                </div>
+                <h1 class="title-font text-2xl font-bold text-gray-800">智能服装商城系统</h1>
+            </div>
+
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="text-gray-700 hover:text-pink-500 transition-colors font-medium">商品与搭配</a>
+                <a href="history.html" class="text-pink-500  hover:text-pink-500 transition-colors font-medium">我的搭配</a>
+                <a href="cart.html" class="text-gray-700 hover:text-pink-500 transition-colors font-medium">购物车</a>
+                <a href="checkout.html" class="text-gray-700 hover:text-pink-500 transition-colors font-medium">结算</a>
+                <a href="order.html" class="text-gray-700 hover:text-pink-500 transition-colors font-medium">我的订单</a>
+                <a href="about.html" class="text-gray-700 hover:text-pink-500 transition-colors  font-medium">关于系统</a>
+                <a href="market.html" class="text-gray-700 hover:text-pink-500  transition-colors font-medium">商城</a>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <div id="userStatus" class="text-sm text-gray-600">
+                    <span id="username">游客</span>
+                </div>
+                <button id="loginBtn" class="btn-secondary" onclick="window.location.href='login.html'">登录</button>
+                <button id="logoutBtn" class="btn-secondary hidden" onclick="logout()">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="container mx-auto px-6 py-8">
+        <!-- 统计信息 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="stats-card">
+                <div class="stats-number" id="totalOutfits">0</div>
+                <div class="text-gray-600">总搭配数</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-number" id="favoriteCount">0</div>
+                <div class="text-gray-600">收藏搭配</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-number" id="totalValue">¥0</div>
+                <div class="text-gray-600">总价值</div>
+            </div>
+        </div>
+
+        <!-- 搜索和筛选 -->
+        <div class="glass-card p-6 mb-8">
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                <div class="flex-1">
+                    <input type="text" id="searchInput" class="search-bar" placeholder="搜索搭配名称...">
+                </div>
+                <div class="flex gap-2">
+                    <button class="btn-secondary" onclick="clearSearch()">
+                        <i class="fas fa-times mr-2"></i>清除
+                    </button>
+                    <button class="btn-primary" onclick="searchOutfits()">
+                        <i class="fas fa-search mr-2"></i>搜索
+                    </button>
+                </div>
+            </div>
+            
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">全部</button>
+                <button class="filter-tab" data-filter="recent">最近</button>
+                <button class="filter-tab" data-filter="favorite">收藏</button>
+                <button class="filter-tab" data-filter="expensive">高价值</button>
+            </div>
+        </div>
+
+        <!-- 搭配历史网格 -->
+        <div id="outfitsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- 搭配卡片将在这里动态生成 -->
+        </div>
+
+        <!-- 空状态 -->
+        <div id="emptyState" class="empty-state hidden">
+            <i class="fas fa-tshirt"></i>
+            <h3 class="text-xl font-semibold mb-2">还没有搭配记录</h3>
+            <p class="mb-6">开始创建您的第一个时尚搭配吧！</p>
+            <button class="btn-primary" onclick="window.location.href='index.html'">
+                <i class="fas fa-plus mr-2"></i>创建搭配
+            </button>
+        </div>
+
+        <!-- 未登录状态 -->
+        <div id="loginPrompt" class="empty-state hidden">
+            <i class="fas fa-user-lock"></i>
+            <h3 class="text-xl font-semibold mb-2">请先登录</h3>
+            <p class="mb-6">登录后即可查看您的搭配历史</p>
+            <button class="btn-primary" onclick="window.location.href='login.html'">
+                <i class="fas fa-sign-in-alt mr-2"></i>立即登录
+            </button>
+        </div>
+    </div>
+
+    <!-- 搭配详情模态框 -->
+    <div id="outfitModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="title-font text-2xl font-bold">搭配详情</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="modalContent">
+                <!-- 详情内容将在这里动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知消息 -->
+    <div id="notification" class="notification">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span id="notificationText">操作成功！</span>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="glass-card mx-6 mb-6 mt-12 p-6 text-center">
+        <p class="text-gray-600">&copy; 2025 时尚搭配师. 让每个人都能成为自己的设计师.</p>
+    </footer>
+
+    <script>
+        class OutfitHistory {
+            constructor() {
+                this.user = this.loadUser();
+                this.outfits = this.loadOutfits();
+                this.filteredOutfits = [...this.outfits];
+                this.currentFilter = 'all';
+                
+                this.init();
+            }
+            
+            init() {
+                this.updateUserStatus();
+                this.updateStats();
+                this.renderOutfits();
+                this.setupEventListeners();
+                this.setupFilters();
+            }
+            
+            loadUser() {
+                const userData = localStorage.getItem('fashionUser');
+                return userData ? JSON.parse(userData) : { isLoggedIn: false, username: '游客' };
+            }
+            
+            loadOutfits() {
+                if (!this.user.isLoggedIn) return [];
+                const outfitsData = localStorage.getItem('savedOutfits');
+                return outfitsData ? JSON.parse(outfitsData).filter(outfit => outfit.userId === this.user.id) : [];
+            }
+            
+            updateUserStatus() {
+                if (this.user.isLoggedIn) {
+                    document.getElementById('username').textContent = this.user.username;
+                    document.getElementById('loginBtn').classList.add('hidden');
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                } else {
+                    document.getElementById('loginPrompt').classList.remove('hidden');
+                }
+            }
+            
+            updateStats() {
+                const totalOutfits = this.outfits.length;
+                const favoriteCount = this.outfits.filter(outfit => outfit.favorite).length;
+                const totalValue = this.outfits.reduce((sum, outfit) => {
+                    return sum + parseInt(outfit.price.replace('¥', '') || 0);
+                }, 0);
+                
+                document.getElementById('totalOutfits').textContent = totalOutfits;
+                document.getElementById('favoriteCount').textContent = favoriteCount;
+                document.getElementById('totalValue').textContent = `¥${totalValue}`;
+            }
+            
+            renderOutfits() {
+                const grid = document.getElementById('outfitsGrid');
+                const emptyState = document.getElementById('emptyState');
+                
+                if (this.filteredOutfits.length === 0) {
+                    grid.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+                
+                emptyState.classList.add('hidden');
+                
+                grid.innerHTML = this.filteredOutfits.map(outfit => this.createOutfitCard(outfit)).join('');
+                
+                // 添加动画
+                anime({
+                    targets: '.outfit-card',
+                    scale: [0.8, 1],
+                    opacity: [0, 1],
+                    delay: anime.stagger(100),
+                    duration: 600,
+                    easing: 'easeOutElastic(1, .8)'
+                });
+            }
+            
+            createOutfitCard(outfit) {
+                const topColor = outfit.top.color;
+                const bottomColor = outfit.bottom.color;
+                const createdAt = new Date(outfit.createdAt).toLocaleDateString('zh-CN');
+                
+                return `
+                    <div class="outfit-card">
+                        <div class="outfit-preview" style="background: linear-gradient(135deg, ${topColor}40, ${bottomColor}40);">
+                            <div class="text-center">
+                                <i class="fas fa-tshirt text-4xl mb-2" style="color: ${topColor};"></i>
+                                <i class="fas fa-user text-3xl" style="color: ${bottomColor};"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h3 class="font-semibold text-lg mb-2">${outfit.name}</h3>
+                            <div class="flex items-center space-x-2 mb-2">
+                                <div class="color-dot" style="background: ${topColor};"></div>
+                                <span class="text-sm text-gray-600">上衣</span>
+                                <div class="color-dot" style="background: ${bottomColor};"></div>
+                                <span class="text-sm text-gray-600">下装</span>
+                            </div>
+                            <div class="text-sm text-gray-500 mb-2">
+                                <i class="fas fa-calendar mr-1"></i>${createdAt}
+                            </div>
+                            <div class="text-lg font-bold text-pink-500">${outfit.price}</div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button class="btn-primary flex-1" onclick="viewOutfitDetails(${outfit.id})">
+                                <i class="fas fa-eye mr-1"></i>详情
+                            </button>
+                            <button class="btn-secondary" onclick="toggleFavorite(${outfit.id})" title="收藏">
+                                <i class="fas fa-heart${outfit.favorite ? '' : '-o'} text-red-500"></i>
+                            </button>
+                            <button class="btn-danger" onclick="deleteOutfit(${outfit.id})" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            setupEventListeners() {
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.searchOutfits(e.target.value);
+                });
+            }
+            
+            setupFilters() {
+                document.querySelectorAll('.filter-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.applyFilter(e.target.dataset.filter);
+                    });
+                });
+            }
+            
+            applyFilter(filter) {
+                this.currentFilter = filter;
+                
+                switch (filter) {
+                    case 'all':
+                        this.filteredOutfits = [...this.outfits];
+                        break;
+                    case 'recent':
+                        this.filteredOutfits = [...this.outfits].sort((a, b) => 
+                            new Date(b.createdAt) - new Date(a.createdAt)
+                        ).slice(0, 10);
+                        break;
+                    case 'favorite':
+                        this.filteredOutfits = this.outfits.filter(outfit => outfit.favorite);
+                        break;
+                    case 'expensive':
+                        this.filteredOutfits = [...this.outfits].sort((a, b) => 
+                            parseInt(b.price.replace('¥', '')) - parseInt(a.price.replace('¥', ''))
+                        );
+                        break;
+                }
+                
+                this.renderOutfits();
+            }
+            
+            searchOutfits(query) {
+                if (!query.trim()) {
+                    this.applyFilter(this.currentFilter);
+                    return;
+                }
+                
+                this.filteredOutfits = this.outfits.filter(outfit => 
+                    outfit.name.toLowerCase().includes(query.toLowerCase()) ||
+                    outfit.price.includes(query)
+                );
+                
+                this.renderOutfits();
+            }
+            
+            clearSearch() {
+                document.getElementById('searchInput').value = '';
+                this.applyFilter(this.currentFilter);
+            }
+            
+            viewOutfitDetails(outfitId) {
+                const outfit = this.outfits.find(o => o.id === outfitId);
+                if (!outfit) return;
+                
+                const modal = document.getElementById('outfitModal');
+                const content = document.getElementById('modalContent');
+                
+                content.innerHTML = `
+                    <div class="text-center mb-6">
+                        <div class="w-32 h-40 mx-auto mb-4 rounded-xl" 
+                             style="background: linear-gradient(135deg, ${outfit.top.color}40, ${outfit.bottom.color}40);">
+                            <div class="flex flex-col items-center justify-center h-full">
+                                <i class="fas fa-tshirt text-5xl mb-2" style="color: ${outfit.top.color};"></i>
+                                <i class="fas fa-user text-4xl" style="color: ${outfit.bottom.color};"></i>
+                            </div>
+                        </div>
+                        <h3 class="title-font text-2xl font-bold mb-2">${outfit.name}</h3>
+                        <p class="text-gray-600">创建于 ${new Date(outfit.createdAt).toLocaleDateString('zh-CN')}</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium">上衣材质</span>
+                            <span>${this.getFabricName(outfit.top.fabric)}</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium">上衣颜色</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-6 h-6 rounded-full border-2 border-gray-300" 
+                                     style="background: ${outfit.top.color};"></div>
+                                <span>${outfit.top.color}</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium">下装材质</span>
+                            <span>${this.getFabricName(outfit.bottom.fabric)}</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium">下装颜色</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-6 h-6 rounded-full border-2 border-gray-300" 
+                                     style="background: ${outfit.bottom.color};"></div>
+                                <span>${outfit.bottom.color}</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium">预估价格</span>
+                            <span class="text-xl font-bold text-pink-500">${outfit.price}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3 mt-6">
+                        <button class="btn-primary flex-1" onclick="applyOutfit(${outfit.id})">
+                            <i class="fas fa-magic mr-2"></i>应用此搭配
+                        </button>
+                        <button class="btn-secondary" onclick="toggleFavorite(${outfit.id})">
+                            <i class="fas fa-heart${outfit.favorite ? '' : '-o'} mr-2"></i>
+                            ${outfit.favorite ? '取消收藏' : '收藏'}
+                        </button>
+                    </div>
+                `;
+                
+                modal.classList.add('show');
+            }
+            
+            getFabricName(fabricKey) {
+                const fabricNames = {
+                    cotton: '棉质',
+                    denim: '牛仔',
+                    leather: '皮革',
+                    linen: '亚麻',
+                    tweed: '粗花呢',
+                    cashmere: '羊绒',
+                    silk: '丝绸',
+                    velvet: '天鹅绒',
+                    polyester: '涤纶',
+                    wool: '羊毛',
+                    chiffon: '雪纺',
+                    corduroy: '灯芯绒',
+                    flannel: '法兰绒',
+                    satin: '缎面',
+                    lace: '蕾丝'
+                };
+                return fabricNames[fabricKey] || fabricKey;
+            }
+            
+            toggleFavorite(outfitId) {
+                const outfitIndex = this.outfits.findIndex(o => o.id === outfitId);
+                if (outfitIndex !== -1) {
+                    this.outfits[outfitIndex].favorite = !this.outfits[outfitIndex].favorite;
+                    this.saveOutfits();
+                    this.updateStats();
+                    this.renderOutfits();
+                    this.showNotification(
+                        this.outfits[outfitIndex].favorite ? '已添加到收藏' : '已取消收藏'
+                    );
+                }
+            }
+            
+            deleteOutfit(outfitId) {
+                if (confirm('确定要删除这个搭配吗？')) {
+                    this.outfits = this.outfits.filter(o => o.id !== outfitId);
+                    this.filteredOutfits = this.filteredOutfits.filter(o => o.id !== outfitId);
+                    this.saveOutfits();
+                    this.updateStats();
+                    this.renderOutfits();
+                    this.showNotification('搭配已删除');
+                }
+            }
+            
+            saveOutfits() {
+                const allOutfits = JSON.parse(localStorage.getItem('savedOutfits') || '[]');
+                const otherUsersOutfits = allOutfits.filter(o => o.userId !== this.user.id);
+                const updatedOutfits = [...otherUsersOutfits, ...this.outfits];
+                localStorage.setItem('savedOutfits', JSON.stringify(updatedOutfits));
+            }
+            
+            showNotification(message, type = 'success') {
+                const notification = document.getElementById('notification');
+                const notificationText = document.getElementById('notificationText');
+                const icon = notification.querySelector('i');
+                
+                notificationText.textContent = message;
+                
+                if (type === 'error') {
+                    icon.className = 'fas fa-exclamation-circle text-red-500 mr-3';
+                } else {
+                    icon.className = 'fas fa-check-circle text-green-500 mr-3';
+                }
+                
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        // 全局函数
+        function viewOutfitDetails(outfitId) {
+            window.outfitHistory.viewOutfitDetails(outfitId);
+        }
+        
+        function toggleFavorite(outfitId) {
+            window.outfitHistory.toggleFavorite(outfitId);
+        }
+        
+        function deleteOutfit(outfitId) {
+            window.outfitHistory.deleteOutfit(outfitId);
+        }
+        
+        function applyOutfit(outfitId) {
+            const outfit = window.outfitHistory.outfits.find(o => o.id === outfitId);
+            if (outfit) {
+                localStorage.setItem('currentOutfit', JSON.stringify({
+                    top: outfit.top,
+                    bottom: outfit.bottom
+                }));
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('outfitModal').classList.remove('show');
+        }
+        
+        function searchOutfits() {
+            const query = document.getElementById('searchInput').value;
+            window.outfitHistory.searchOutfits(query);
+        }
+        
+        function clearSearch() {
+            window.outfitHistory.clearSearch();
+        }
+        
+        function logout() {
+            localStorage.removeItem('fashionUser');
+            window.location.reload();
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.outfitHistory = new OutfitHistory();
+        });
+        
+        // 点击模态框外部关闭
+        document.getElementById('outfitModal').addEventListener('click', (e) => {
+            if (e.target.id === 'outfitModal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

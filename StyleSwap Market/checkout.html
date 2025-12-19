@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>结算与支付 - 服装管理系统</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-bg: #FAF9F6;
+      --accent-coral: #FF6B6B;
+      --accent-blue: #4ECDC4;
+      --text-dark: #2C3E50;
+      --light-pink: #FFE5E5;
+      --light-mint: #E8F8F5;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:'Inter',sans-serif;
+      background:var(--primary-bg);
+      color:var(--text-dark);
+      min-height:100vh;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    a{text-decoration:none;color:inherit;}
+
+    /* ----- 顶部导航 ----- */
+    .navbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      backdrop-filter:blur(12px);
+      background:rgba(255,255,255,.25);
+      border-bottom:1px solid rgba(255,255,255,.2);
+    }
+    .navbar-inner{
+      max-width:80rem;
+      margin:0 auto;
+      padding:.75rem 1.5rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .logo{font-size:1.25rem;font-weight:600;letter-spacing:.05em;}
+    .nav-links{display:flex;gap:1.5rem;font-size:.875rem;}
+    .nav-links a{transition:color .3s;}
+    .nav-links a:hover,
+    .nav-links a.active{color:var(--accent-coral);}
+
+    /* ----- 主容器 ----- */
+    .container{
+      max-width:64rem;
+      margin:0 auto;
+      padding:3rem 1.5rem 4rem;
+    }
+    .page-title{
+      font-family:'Playfair Display',serif;
+      font-size:2rem;
+      font-weight:600;
+      text-align:center;
+      margin-bottom:2.5rem;
+    }
+
+    /* ----- 玻璃卡片 ----- */
+    .glass-card{
+      background:rgba(255,255,255,.3);
+      backdrop-filter:blur(15px);
+      border-radius:20px;
+      padding:1.5rem 2rem;
+      border:1px solid rgba(255,255,255,.2);
+      margin-bottom:2rem;
+    }
+    .glass-card h3{
+      font-weight:600;
+      margin-bottom:1rem;
+    }
+
+    /* ----- 表单 ----- */
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:1rem;
+    }
+    @media(max-width:768px){.form-grid{grid-template-columns:1fr;}}
+    .form-group{ display:flex;flex-direction:column; }
+    .form-group.full{ grid-column:1/-1; }
+    .form-label{
+      font-size:.875rem;
+      margin-bottom:.25rem;
+      opacity:.8;
+    }
+    .form-input{
+      padding:.5rem .75rem;
+      border-radius:12px;
+      border:1px solid rgba(44,62,80,.15);
+      background:rgba(255,255,255,.5);
+      transition:all .3s;
+    }
+    .form-input:focus{
+      outline:none;
+      border-color:var(--accent-blue);
+      background:#fff;
+    }
+
+    /* ----- 优惠券选择器 ----- */
+    .coupon-selector{
+      margin-top:1rem;
+    }
+    .coupon-radio{
+      display:flex;
+      align-items:center;
+      gap:.75rem;
+      padding:.75rem;
+      margin-bottom:.5rem;
+      background:rgba(255,255,255,.4);
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.5);
+      cursor:pointer;
+      transition:all .3s;
+    }
+    .coupon-radio:hover{
+      border-color:var(--accent-coral);
+    }
+    .coupon-radio input{
+      margin:0;
+    }
+    .coupon-info{
+      flex:1;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .coupon-name{
+      font-weight:500;
+    }
+    .coupon-discount{
+      color:var(--accent-coral);
+      font-weight:600;
+    }
+
+    /* ----- 订单摘要 ----- */
+    .order-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:.75rem 0;
+      border-bottom:1px solid rgba(44,62,80,.08);
+    }
+    .order-item:last-child{border-bottom:none;}
+    .order-total{
+      text-align:right;
+      margin-top:1rem;
+      font-size:1.25rem;
+      font-weight:600;
+    }
+    .total-price{
+      background:linear-gradient(135deg,var(--accent-coral),var(--accent-blue));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    /* ----- 按钮 ----- */
+    .btn-primary{
+      padding:.75rem 2rem;
+      border-radius:14px;
+      border:none;
+      font-weight:600;
+      cursor:pointer;
+      background:linear-gradient(135deg,var(--accent-coral),var(--accent-blue));
+      color:#fff;
+      box-shadow:0 8px 20px rgba(78,205,196,.25);
+      transition:all .3s;
+    }
+    .btn-primary:hover{
+      box-shadow:0 10px 28px rgba(78,205,196,.4);
+    }
+    .btn-center{
+      display:flex;
+      justify-content:center;
+      margin-top:2rem;
+    }
+
+    /* ----- 页脚 ----- */
+    .footer{
+      text-align:center;
+      padding:1.5rem 0;
+      font-size:.75rem;
+      color:var(--text-dark);
+      opacity:.5;
+      backdrop-filter:blur(12px);
+      background:rgba(255,255,255,.2);
+      border-top:1px solid rgba(255,255,255,.2);
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <div class="logo">服装管理系统</div>
+      <nav class="nav-links">
+        <a href="index.html">搭配模拟</a>
+        <a href="history.html" class="active">我的搭配</a>
+        <a href="cart.html">购物车</a>
+        <a href="checkout.html">结算</a>
+        <a href="order.html">我的订单</a>
+        <a href="about.html">关于系统</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 主体 -->
+  <main class="container">
+    <h1 class="page-title">💳 结算与支付</h1>
+
+    <!-- 收货信息 -->
+    <section class="glass-card">
+      <h3>收货信息</h3>
+      <form id="checkout-form" class="form-grid">
+        <div class="form-group">
+          <label class="form-label">姓名</label>
+          <input type="text" id="name" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">联系电话</label>
+          <input type="text" id="phone" class="form-input" required>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">收货地址</label>
+          <input type="text" id="address" class="form-input" required>
+        </div>
+      </form>
+    </section>
+
+    <!-- 优惠券选择 -->
+    <section class="glass-card">
+      <h3>优惠券 <small style="font-size:.875rem;font-weight:400;">（已自动推荐最优惠）</small></h3>
+      <div id="coupon-list" class="coupon-selector">
+        <!-- JS 动态生成 -->
+      </div>
+    </section>
+
+    <!-- 订单摘要 -->
+    <section class="glass-card">
+      <h3>订单摘要</h3>
+      <div id="order-items" class="space-y-2">
+        <!-- JS 动态填充 -->
+      </div>
+      <div class="order-total">
+        券后合计：<span class="total-price" id="checkout-total">¥0.00</span>
+      </div>
+    </section>
+
+    <!-- 提交按钮 -->
+    <div class="btn-center">
+      <button id="submit-order" class="btn-primary">提交订单并支付</button>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    © 2025 服装管理系统 | 结算页面
+  </footer>
+
+  <script>
+    /* ========== 数据层 ========== */
+    const COUPONS = [
+      {id:1,name:'新人立减 ¥20',type:'fixed',value:20,threshold:0},
+      {id:2,name:'满 ¥200 减 ¥30',type:'fixed',value:30,threshold:200},
+      {id:3,name:'满 ¥300 减 ¥50',type:'fixed',value:50,threshold:300},
+      {id:4,name:'全场 9 折',type:'percent',value:0.9,threshold:0},
+      {id:5,name:'满 ¥500 打 8 折',type:'percent',value:0.8,threshold:500}
+    ];
+
+    /* ========== 工具函数 ========== */
+    function loadCart(){return JSON.parse(localStorage.getItem('fashionCart')||'[]');}
+    function saveCart(cart){localStorage.setItem('fashionCart',JSON.stringify(cart));}
+    function calcOriginTotal(cart){
+      return cart.reduce((s,i)=>s+i.price*i.quantity,0);
+    }
+    function pickBestCoupon(total){
+      let best=null,maxSave=0;
+      COUPONS.forEach(c=>{
+        if(total<c.threshold) return;
+        const save=c.type==='fixed'?c.value:(total*(1-c.value));
+        if(save>maxSave){maxSave=save;best=c;}
+      });
+      return best;
+    }
+
+    /* ========== 渲染订单 & 优惠券 ========== */
+    let selectedCoupon=null;
+    function render(){
+      const cart=loadCart();
+      const orderBox=document.getElementById('order-items');
+      const couponBox=document.getElementById('coupon-list');
+      if(!cart.length){
+        orderBox.innerHTML='<p class="text-gray-600">购物车为空，<a href="index.html" class="text-pink-500">去选购</a></p>';
+        couponBox.innerHTML='';
+        document.getElementById('checkout-total').textContent='¥0.00';
+        return;
+      }
+      const originTotal=calcOriginTotal(cart);
+      const best=pickBestCoupon(originTotal);
+      selectedCoupon=best;
+
+      /* 订单摘要 */
+      orderBox.innerHTML=cart.map(i=>`
+        <div class="order-item">
+          <div class="flex items-center gap-3">
+            <img src="${i.image}" alt="${i.name}" class="w-12 h-12 object-cover rounded">
+            <div>
+              <div class="font-medium">${i.name}</div>
+              <div class="text-sm text-gray-600">数量：${i.quantity}</div>
+            </div>
+          </div>
+          <div class="font-bold text-pink-500">¥${(i.price*i.quantity).toFixed(2)}</div>
+        </div>
+      `).join('');
+
+      /* 优惠券列表 */
+      couponBox.innerHTML=COUPONS.map(c=>`
+        <label class="coupon-radio">
+          <input type="radio" name="coupon" value="${c.id}" ${c.id===best?.id?'checked':''} onchange="changeCoupon(${c.id})">
+          <div class="coupon-info">
+            <span class="coupon-name">${c.name}</span>
+            <span class="coupon-discount">
+              ${c.type==='fixed'?`减¥${c.value}`:`${(c.value*10)}折`}
+              ${c.threshold?`（满¥${c.threshold}）`:''}
+            </span>
+          </div>
+        </label>
+      `).join('');
+
+      updateTotal();
+    }
+
+    function changeCoupon(id){
+      selectedCoupon=COUPONS.find(c=>c.id===id);
+      updateTotal();
+    }
+
+    function updateTotal(){
+      const cart=loadCart();
+      const origin=calcOriginTotal(cart);
+      let final=origin;
+      if(selectedCoupon){
+        if(selectedCoupon.type==='fixed') final=Math.max(0,origin-selectedCoupon.value);
+        else final=origin*selectedCoupon.value;
+      }
+      document.getElementById('checkout-total').textContent=`¥${final.toFixed(2)}`;
+    }
+
+    /* ========== 提交订单 ========== */
+    document.getElementById('submit-order').addEventListener('click',()=>{
+      const form=document.getElementById('checkout-form');
+      if(!form.checkValidity()) return form.reportValidity();
+      const cart=loadCart();
+      if(!cart.length) return alert('购物车为空！');
+      const origin=calcOriginTotal(cart);
+      let final=origin;
+      if(selectedCoupon){
+        if(selectedCoupon.type==='fixed') final=Math.max(0,origin-selectedCoupon.value);
+        else final=origin*selectedCoupon.value;
+      }
+      const order={
+        id:Date.now(),
+        items:cart,
+        originTotal:origin,
+        finalTotal:final,
+        coupon:selectedCoupon,
+        info:{
+          name:document.getElementById('name').value.trim(),
+          phone:document.getElementById('phone').value.trim(),
+          address:document.getElementById('address').value.trim()
+        },
+        createAt:new Date().toISOString()
+      };
+      const orders=JSON.parse(localStorage.getItem('fashionOrders')||'[]');
+      orders.push(order);
+      localStorage.setItem('fashionOrders',JSON.stringify(orders));
+      localStorage.removeItem('fashionCart');
+      alert('订单提交成功！');
+      location.href='order.html';
+    });
+
+    /* ========== 初始化 ========== */
+    document.addEventListener('DOMContentLoaded',render);
+  </script>
+</body>
+</html>
